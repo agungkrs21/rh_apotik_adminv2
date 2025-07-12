@@ -18,7 +18,7 @@ const Sidebar = ({ user, onLogout }) => {
       <div>
         <a href="/" className="flex items-center gap-2 p-4 text-2xl font-bold border-b border-slate-700">
           <FaClinicMedical className="text-teal-400" />
-          Apotik Sehat
+          Rahmat Ratu-Glow
         </a>
 
         <div className="p-4 border-b border-slate-700 text-sm">

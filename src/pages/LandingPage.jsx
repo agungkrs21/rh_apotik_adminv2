@@ -8,7 +8,7 @@ const LandingPage = () => {
       <div className="bg-white shadow-xl rounded-2xl p-8 max-w-xl">
         <div className="flex justify-center items-center gap-2 mb-4 text-teal-600 text-3xl font-bold">
           <FaClinicMedical />
-          Apotik Sehat
+          Rahmat Ratu Glow
         </div>
 
         <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4">Selamat Datang di Sistem Manajemen Apotik</h1>
@@ -19,7 +19,7 @@ const LandingPage = () => {
         </Link>
       </div>
 
-      <footer className="mt-10 text-sm text-gray-500">&copy; {new Date().getFullYear()} Apotik Sehat. All rights reserved.</footer>
+      <footer className="mt-10 text-sm text-gray-500">&copy; {new Date().getFullYear()} Rahmat Ratu Glow. All rights reserved.</footer>
     </div>
   );
 };
