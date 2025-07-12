@@ -13,6 +13,7 @@ const Pesanan = () => {
   const [editingId, setEditingId] = useState(null);
   const [statusEdit, setStatusEdit] = useState("");
   const [selectedPesanan, setSelectedPesanan] = useState(null);
+  const [selectedIdPesanan, setSelectedIdPesanan] = useState(null);
 
   const fetchPesanan = async () => {
     const res = await axios.get("http://localhost:3000/api/pesanan");
@@ -20,7 +21,7 @@ const Pesanan = () => {
   };
 
   const fetchDetail = async (id_pesanan) => {
-    const res = await axios.get(`http://localhost:3000/api/detail_pesanan/${id_pesanan}`);
+    const res = await axios.get(`http://localhost:3000/api/pesanan/detail_pesanan/${id_pesanan}`);
     setSelectedPesanan({ id_pesanan, details: res.data });
   };
 
@@ -59,12 +60,12 @@ const Pesanan = () => {
         cell: (info) => <span className="capitalize font-medium text-slate-700">{info.getValue()}</span>,
       },
       {
-        accessorKey: "bukti_bayar",
+        accessorKey: "bukti_pembayaran",
         header: "Bukti Bayar",
         cell: (info) =>
           info.getValue() ? (
-            <a href={info.getValue()} target="_blank" rel="noopener noreferrer">
-              <img src={info.getValue()} alt="bukti" className="w-12 h-12 object-cover rounded" />
+            <a href={`http://localhost:3000${info.getValue()}`} target="_blank" rel="noopener noreferrer">
+              <img src={`http://localhost:3000${info.getValue()}`} alt="bukti" className="w-12 h-12 object-cover rounded" />
             </a>
           ) : (
             <span className="text-sm text-slate-400">Belum ada</span>
@@ -74,15 +75,18 @@ const Pesanan = () => {
         header: "Aksi",
         cell: ({ row }) => (
           <div className="space-x-2">
-            <button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded shadow"
-              onClick={() => {
-                setEditingId(row.original.id);
-                setStatusEdit(row.original.status_pembelian);
-              }}
-            >
-              Edit
-            </button>
+            {row.original.status_pembelian !== "selesai" && (
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded shadow"
+                onClick={() => {
+                  setEditingId(row.original.id);
+                  setStatusEdit(row.original.status_pembelian);
+                  setSelectedIdPesanan(row.original.id_pesanan);
+                }}
+              >
+                Edit
+              </button>
+            )}
             <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow" onClick={() => handleDelete(row.original.id)}>
               Hapus
             </button>
@@ -116,11 +120,24 @@ const Pesanan = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    await axios.put(`http://localhost:3000/api/pesanan/${editingId}`, {
-      status_pembelian: statusEdit,
-    });
-    setEditingId(null);
-    fetchPesanan();
+    try {
+      if (statusEdit === "selesai") {
+        const res = await axios.put(`http://localhost:3000/api/pesanan/selesai/${selectedIdPesanan}`);
+        if (res.status === 200) {
+          alert("Pesanan berhasil diselesaikan.");
+        }
+      } else {
+        await axios.put(`http://localhost:3000/api/pesanan/${editingId}`, {
+          status_pembelian: statusEdit,
+        });
+      }
+
+      setEditingId(null);
+      fetchPesanan();
+    } catch (error) {
+      console.error(error);
+      alert("Gagal menyelesaikan pesanan.");
+    }
   };
 
   const handleExportCSV = () => {
@@ -159,9 +176,10 @@ const Pesanan = () => {
         <p className="text-slate-600">
           Jumlah pesanan menunggu: <strong>{jumlahMenunggu}</strong>
         </p>
-        <button onClick={handleExportCSV} className="text-sm text-white bg-slate-600 hover:bg-slate-700 px-3 py-1 rounded shadow">
+        {/* Export CSV */}
+        {/* <button onClick={handleExportCSV} className="text-sm text-white bg-slate-600 hover:bg-slate-700 px-3 py-1 rounded shadow">
           📤 Ekspor CSV
-        </button>
+        </button> */}
       </div>
 
       {editingId && (
@@ -194,7 +212,10 @@ const Pesanan = () => {
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="border-t border-slate-200 hover:bg-slate-50">
+              <tr
+                key={row.id}
+                className={row.original.status_pembelian !== "selesai" ? "border-t border-slate-200 hover:bg-slate-50" : "border-t border-slate-200 hover:bg-gray-200 bg-gray-100 text-gray-500"}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="p-2">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -228,7 +249,7 @@ const Pesanan = () => {
               <div key={i} className="flex justify-between py-1 border-b">
                 <div>Produk #{item.id_produk}</div>
                 <div>
-                  {item.jumlah} x Rp{item.harga.toLocaleString()} = Rp{item.total.toLocaleString()}
+                  {item.jumlah} x Rp {Number(item.harga).toLocaleString()} = Rp {Number(item.total).toLocaleString()}
                 </div>
               </div>
             ))}

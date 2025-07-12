@@ -16,10 +16,10 @@ const Sidebar = ({ user, onLogout }) => {
   return (
     <aside className="w-64 bg-slate-800 text-white h-screen fixed flex flex-col justify-between">
       <div>
-        <div className="flex items-center gap-2 p-4 text-2xl font-bold border-b border-slate-700">
+        <a href="/" className="flex items-center gap-2 p-4 text-2xl font-bold border-b border-slate-700">
           <FaClinicMedical className="text-teal-400" />
           Apotik Sehat
-        </div>
+        </a>
 
         <div className="p-4 border-b border-slate-700 text-sm">
           <p className="font-semibold">{user?.nama ?? "Pengguna"}</p>

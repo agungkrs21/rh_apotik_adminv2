@@ -44,7 +44,7 @@ const Produk = () => {
       { accessorKey: "nama", header: "Nama" },
       { accessorKey: "kategori", header: "Kategori" },
       { accessorKey: "deskripsi", header: "Deskripsi" },
-      { accessorKey: "harga", header: "Harga" },
+      { accessorKey: "harga", header: "Harga", cell: (harga) => Number(harga.getValue()).toLocaleString() },
       { accessorKey: "stok", header: "Stok" },
       {
         accessorKey: "gambar",

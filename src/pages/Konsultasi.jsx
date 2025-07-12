@@ -1,7 +1,7 @@
-// Konsultasi.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, flexRender, getPaginationRowModel } from "@tanstack/react-table";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const Konsultasi = () => {
   const [konsultasi, setKonsultasi] = useState([]);
@@ -13,7 +13,9 @@ const Konsultasi = () => {
   const [editingId, setEditingId] = useState(null);
   const [statusEdit, setStatusEdit] = useState("");
   const [catatanEdit, setCatatanEdit] = useState("");
-
+  const [balasanEdit, setBalasanEdit] = useState("");
+  const [topikEdit, setTopikEdit] = useState("");
+  const { user } = useAuth();
   const fetchKonsultasi = async () => {
     const res = await axios.get("http://localhost:3000/api/konsultasi");
     setKonsultasi(res.data);
@@ -63,6 +65,11 @@ const Konsultasi = () => {
         header: "Catatan",
       },
       {
+        accessorKey: "balasan",
+        header: "Balasan",
+        cell: (info) => (info.getValue() ? <span className="text-green-700">{info.getValue()}</span> : <span className="text-slate-400 italic">Belum dibalas</span>),
+      },
+      {
         header: "Aksi",
         cell: ({ row }) => (
           <div className="space-x-2">
@@ -72,9 +79,11 @@ const Konsultasi = () => {
                 setEditingId(row.original.id);
                 setStatusEdit(row.original.status_konsultasi);
                 setCatatanEdit(row.original.catatan || "");
+                setBalasanEdit(row.original.balasan || "");
+                setTopikEdit(row.original.topik || "");
               }}
             >
-              Edit
+              Balas
             </button>
             <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded shadow" onClick={() => handleDelete(row.original.id)}>
               Hapus
@@ -89,9 +98,7 @@ const Konsultasi = () => {
   const table = useReactTable({
     data: filteredData,
     columns,
-    state: {
-      sorting: sort,
-    },
+    state: { sorting: sort },
     onSortingChange: setSort,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -109,14 +116,17 @@ const Konsultasi = () => {
     await axios.put(`http://localhost:3000/api/konsultasi/${editingId}`, {
       status_konsultasi: statusEdit,
       catatan: catatanEdit,
+      balasan: balasanEdit,
+      topik: topikEdit,
+      id_dokter: user.id,
     });
     setEditingId(null);
     fetchKonsultasi();
   };
 
   const handleExportCSV = () => {
-    const header = ["ID", "User", "Dokter", "Topik", "Tanggal", "Status", "Catatan"];
-    const rows = filteredData.map((k) => [k.id, k.nama_user, k.nama_dokter, k.topik, formatDate(k.tanggal_konsultasi), k.status_konsultasi, k.catatan]);
+    const header = ["ID", "User", "Dokter", "Topik", "Tanggal", "Status", "Catatan", "Balasan"];
+    const rows = filteredData.map((k) => [k.id, k.nama_user, k.nama_dokter, k.topik, formatDate(k.tanggal_konsultasi), k.status_konsultasi, k.catatan, k.balasan || ""]);
     const csvContent = [header, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -149,7 +159,7 @@ const Konsultasi = () => {
 
       {editingId && (
         <form onSubmit={handleEditSubmit} className="bg-white p-4 rounded-xl shadow mb-4 flex flex-col md:flex-row items-center gap-4">
-          <span className="text-slate-600">Update Status & Catatan:</span>
+          <span className="text-slate-600">Update Status, Catatan & Balasan:</span>
           <select className="border border-slate-300 p-2 rounded" value={statusEdit} onChange={(e) => setStatusEdit(e.target.value)}>
             <option value="menunggu">Menunggu</option>
             <option value="diterima">Diterima</option>
@@ -157,6 +167,7 @@ const Konsultasi = () => {
             <option value="dibatalkan">Dibatalkan</option>
           </select>
           <input className="border border-slate-300 p-2 rounded" value={catatanEdit} onChange={(e) => setCatatanEdit(e.target.value)} placeholder="Catatan" />
+          <input className="border border-slate-300 p-2 rounded" value={balasanEdit} onChange={(e) => setBalasanEdit(e.target.value)} placeholder="Balasan" />
           <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow">Simpan</button>
         </form>
       )}
@@ -200,9 +211,10 @@ const Konsultasi = () => {
           <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-3 py-1 border rounded disabled:opacity-50">
             Next
           </button>
-          <button onClick={handleExportCSV} className="ml-4 bg-slate-600 hover:bg-slate-700 text-white px-3 py-1 rounded shadow">
+          {/* Export CSV */}
+          {/* <button onClick={handleExportCSV} className="ml-4 bg-slate-600 hover:bg-slate-700 text-white px-3 py-1 rounded shadow">
             📤 Ekspor CSV
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
