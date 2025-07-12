@@ -42,9 +42,18 @@ const Users = () => {
     setEditModalOpen(true);
   };
 
+  function formatDateInput(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const timezoneOffset = date.getTimezoneOffset() * 60000; // in ms
+    const localDate = new Date(date.getTime() - timezoneOffset);
+    return localDate.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  }
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     const { id, sumber, ...updatedFields } = editData;
+    updatedFields.tanggal_lahir = formatDateInput(updatedFields.tanggal_lahir);
     console.log(updatedFields);
     try {
       const res = await fetch(`http://localhost:3000/api/users/${id}?tbname=${sumber}`, {
@@ -215,7 +224,7 @@ const Users = () => {
               <option value="Laki-laki">Laki-laki</option>
               <option value="Perempuan">Perempuan</option>
             </select>
-            <input type="date" className="w-full border p-2 rounded" value={editData.tanggal_lahir?.slice(0, 10) || ""} onChange={(e) => setEditData({ ...editData, tanggal_lahir: e.target.value })} />
+            <input type="date" className="w-full border p-2 rounded" value={formatDateInput(editData.tanggal_lahir)} onChange={(e) => setEditData({ ...editData, tanggal_lahir: e.target.value })} />
             <select className="w-full border p-2 rounded" value={editData.peran} onChange={(e) => setEditData({ ...editData, peran: e.target.value })}>
               {editData.sumber === "admin" ? (
                 <>
